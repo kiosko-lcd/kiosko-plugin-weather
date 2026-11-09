@@ -9,7 +9,7 @@
  */
 import { join } from 'node:path';
 import { fetchWeather, loadWeather, saveWeather, type Weather } from '@loksly/weather-astro';
-import { definePlugin, defineSource, defineWidget, t, type Box } from '@tessera/sdk';
+import { definePlugin, defineSource, defineWidget, t, type Box } from '@kiosko/sdk';
 import { demoWeather } from './demo.ts';
 import { drawDays, drawHourly, drawMoon, drawNow, drawTiny, rule, type Painter } from './draw.ts';
 
@@ -139,7 +139,7 @@ export default definePlugin({
   name: { en: 'Weather', es: 'El tiempo' },
   version: '0.1.0',
   description: { en: 'Weather from Open-Meteo, shared with every widget, and a forecast card.', es: 'El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.' },
-  author: 'Tessera',
+  author: 'Kiosko',
   license: 'MIT',
   icon: 'cloud-sun',
   sources: [current],

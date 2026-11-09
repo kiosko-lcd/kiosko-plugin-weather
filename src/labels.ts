@@ -2,7 +2,7 @@
  * Texts of the weather card, in the user's language: WMO codes, moon phases
  * and how old a reading is. Kept apart from the drawing so they can be tested.
  */
-import type { Localized } from '@tessera/sdk';
+import type { Localized } from '@kiosko/sdk';
 import type { Moon, PhaseName, Weather } from '@loksly/weather-astro';
 
 /** WMO code → text. Codes not listed are not emitted by the Open-Meteo endpoint. */

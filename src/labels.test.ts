@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { localize } from '@tessera/sdk';
+import { localize } from '@kiosko/sdk';
 import { moonPhase } from '@loksly/weather-astro';
 import { dayLabel, describeCode, moonHeadline, staleness } from './labels.ts';
 import { demoWeather } from './demo.ts';

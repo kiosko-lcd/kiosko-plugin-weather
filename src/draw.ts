@@ -5,7 +5,7 @@
  * the same code serves a 300×200 corner and a full 1920×462 strip.
  */
 import { iconFor, moonPhase, type DayForecast, type HourForecast, type Weather } from '@loksly/weather-astro';
-import type { Box, Graphics, Localized, RenderContext, Theme } from '@tessera/sdk';
+import type { Box, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
 import { dayLabel, describeCode, moonHeadline, moonName, staleness } from './labels.ts';
 
 export interface Painter {
