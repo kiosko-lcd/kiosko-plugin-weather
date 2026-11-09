@@ -1,10 +1,54 @@
 {
-  "name": "@tessera/plugin-weather",
+  "name": "tessera-plugin-weather",
   "version": "0.1.0",
   "description": "Weather from Open-Meteo (no API key) as a shared source, and a forecast card: now, the next hours and days, and the moon.",
   "type": "module",
   "license": "MIT",
-  "exports": { ".": { "source": "./src/index.ts", "default": "./dist/index.js" } },
-  "tessera": { "plugin": "./dist/index.js" },
-  "peerDependencies": { "@tessera/sdk": "*", "@loksly/weather-astro": "*" }
+  "author": "Loksly",
+  "keywords": [
+    "tessera",
+    "tessera-plugin",
+    "lcd",
+    "widgets",
+    "info"
+  ],
+  "homepage": "https://github.com/Loksly/tessera-plugin-weather#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Loksly/tessera-plugin-weather.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Loksly/tessera-plugin-weather/issues"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "tessera": {
+    "plugin": "./dist/index.js",
+    "id": "weather"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --conditions=source --test \"src/**/*.test.ts\"",
+    "check": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@loksly/weather-astro": "^0.1.0",
+    "@tessera/sdk": "^0.1.0",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3"
+  }
 }
