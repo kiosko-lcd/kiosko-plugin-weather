@@ -3,7 +3,7 @@
  * and how old a reading is. Kept apart from the drawing so they can be tested.
  */
 import type { Localized } from '@kiosko/sdk';
-import type { Moon, PhaseName, Weather } from '@loksly/weather-astro';
+import type { Moon, PhaseName } from '@loksly/weather-astro';
 
 /** WMO code → text. Codes not listed are not emitted by the Open-Meteo endpoint. */
 const WMO: Record<number, Localized> = {
@@ -72,14 +72,8 @@ export function moonHeadline(m: Moon): Localized {
   return m.daysToNew === 1 ? { en: 'New tomorrow', es: 'Nueva mañana' } : { en: `New in ${m.daysToNew} days`, es: `Nueva en ${m.daysToNew} días` };
 }
 
-/** "35 min ago" for a reading that's getting old; nothing while it's recent. */
-export function staleness(w: Pick<Weather, 'fetched'>, now: number): Localized | null {
-  const mins = Math.floor((now - w.fetched) / 60_000);
-  if (mins < 20) return null;
-  if (mins < 60) return { en: `${mins} min ago`, es: `hace ${mins} min` };
-  const h = Math.floor(mins / 60);
-  return { en: `${h} h ago`, es: `hace ${h} h` };
-}
+/** A reading older than this gets its age under the temperature ("35 min ago"). */
+export const STALE_AFTER_MS = 20 * 60_000;
 
 /** Short weekday of a forecast day ("YYYY-MM-DD"), "Today" for the first one. */
 export function dayLabel(date: string, index: number, locale: string, t: (x: Localized) => string): string {

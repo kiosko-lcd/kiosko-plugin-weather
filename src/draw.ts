@@ -5,14 +5,15 @@
  * the same code serves a 300×200 corner and a full 1920×462 strip.
  */
 import { iconFor, moonPhase, type DayForecast, type HourForecast, type Weather } from '@loksly/weather-astro';
-import type { Box, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
-import { dayLabel, describeCode, moonHeadline, moonName, staleness } from './labels.ts';
+import type { Box, Formatters, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
+import { dayLabel, describeCode, moonHeadline, moonName, STALE_AFTER_MS } from './labels.ts';
 
 export interface Painter {
   g: Graphics;
   kit: RenderContext<unknown, unknown>['kit'];
   theme: Theme;
   t: (text: Localized) => string;
+  fmt: Formatters;
   locale: string;
   now: number;
 }
@@ -31,8 +32,18 @@ export function drawTiny(p: Painter, w: Weather, b: Box): void {
   kit.drawTracked(g, text, x0 + icon + 6, b.y + b.h / 2 + size * 0.36, { size, family: theme.fonts.sansBold, color: theme.colors.ink });
 }
 
-/** Now: icon, big temperature, what it's like, the place and today's range. */
-export function drawNow(p: Pick<Painter, 'g' | 'kit' | 'theme' | 't' | 'now'>, w: Weather, b: Box): void {
+/** Feels like, humidity and wind, in the reading's units. */
+export function detailsLine(w: Weather, t: (text: Localized) => string): string {
+  const wind = `${w.wind} ${w.units === 'imperial' ? 'mph' : 'km/h'}`;
+  return `${t({ en: 'Feels', es: 'Sensación' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
+}
+
+/**
+ * Now: icon, big temperature, what it's like, the place and today's range;
+ * with `details`, the feeling, humidity and wind, and how old the reading is
+ * when it's getting old. Lines that don't fit are left out, last first.
+ */
+export function drawNow(p: Pick<Painter, 'g' | 'kit' | 'theme' | 't' | 'fmt' | 'now'>, w: Weather, b: Box, o: { details?: boolean } = {}): void {
   const { g, kit, theme, t } = p;
   const icon = Math.min(b.h * 0.72, b.w * 0.34, 130);
   const gap = icon * 0.16;
@@ -40,34 +51,46 @@ export function drawNow(p: Pick<Painter, 'g' | 'kit' | 'theme' | 't' | 'now'>, w
   const tw = b.w - icon - gap;
   const T = kit.fitSize(g, `${w.temp}°`, tw, { size: clamp(b.h * 0.46, 16, 110), family: theme.fonts.sansBold }, 12);
   const D = clamp(T * 0.27, 10, 28);
+  const ds = D * 0.86;
   const today = w.days[0];
-  const detail = today ? `${w.place} · ${today.min}° / ${today.max}°` : w.place;
-  const old = staleness(w, p.now);
-  const lines = 2 + (old && b.h > T * 0.8 + D * 4.4 ? 1 : 0);
-  const groupH = T * 0.78 + D * 0.5 + lines * D * 1.3;
+  const lines: { text: string; size: number; color: string }[] = [
+    { text: t(describeCode(w.code)), size: D, color: theme.colors.ink },
+    { text: today ? `${w.place} · ${today.min}° / ${today.max}°` : w.place, size: ds, color: theme.colors.inkDim },
+  ];
+  if (o.details) lines.push({ text: detailsLine(w, t), size: ds, color: theme.colors.inkDim });
+  if (p.now - w.fetched >= STALE_AFTER_MS) lines.push({ text: p.fmt.ago(w.fetched), size: ds, color: theme.colors.warn });
+  // The first two always; the others while they fit under the temperature.
+  const fits = (n: number) => T * 0.8 + D * 0.5 + n * D * 1.3 + D * 0.4 <= b.h;
+  let n = lines.length;
+  while (n > 2 && !fits(n)) n--;
+  const groupH = T * 0.78 + D * 0.5 + n * D * 1.3;
   const top = b.y + Math.max(0, (b.h - groupH) / 2);
   kit.drawWeatherIcon(g, iconFor(w.code, w.night), b.x + icon / 2, b.y + b.h / 2, icon, theme.colors.ink);
   let y = top + T * 0.78;
   kit.drawTracked(g, `${w.temp}°`, tx, y, { size: T, family: theme.fonts.sansBold, color: theme.colors.ink, tracking: -T * 0.02 });
-  y += D * 0.5 + D * 1.15;
-  const desc = t(describeCode(w.code));
-  kit.drawTracked(g, kit.truncate(g, desc, tw, { size: D, family: theme.fonts.sans }), tx, y, { size: D, family: theme.fonts.sans, color: theme.colors.ink });
-  y += D * 1.3;
-  const ds = D * 0.86;
-  kit.drawTracked(g, kit.truncate(g, detail, tw, { size: ds, family: theme.fonts.sans }), tx, y, { size: ds, family: theme.fonts.sans, color: theme.colors.inkDim });
-  if (lines === 3 && old) {
+  y += D * 0.5 - D * 0.15;
+  for (const line of lines.slice(0, n)) {
     y += D * 1.3;
-    kit.drawTracked(g, kit.truncate(g, t(old), tw, { size: ds, family: theme.fonts.sans }), tx, y, { size: ds, family: theme.fonts.sans, color: theme.colors.warn });
+    const font = { size: line.size, family: theme.fonts.sans };
+    kit.drawTracked(g, kit.truncate(g, line.text, tw, font), tx, y, { ...font, color: line.color });
   }
+}
+
+/** "14h", or "2pm" on a 12-hour clock: short, for a column. */
+export function hourLabel(label: string, hour12: boolean): string {
+  const hh = Number.parseInt(label.slice(0, 2), 10);
+  if (!Number.isFinite(hh)) return label;
+  return hour12 ? `${hh % 12 || 12}${hh < 12 ? 'am' : 'pm'}` : `${label.slice(0, 2)}h`;
 }
 
 /**
  * The next hours: temperature curve on top, rain bars below, sharing the same
  * hour axis, which is the comparison that matters (when it will be warmest,
  * when it may rain). The vertical scale fits the range shown: on a flat day a
- * fixed 0–40 scale would draw a straight line.
+ * fixed 0–40 scale would draw a straight line. `hours` come already thinned
+ * to one every `step`; a faint line marks midnight.
  */
-export function drawHourly(p: Painter, hours: HourForecast[], b: Box): void {
+export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep = 1): void {
   const { g, kit, theme, t } = p;
   const k = clamp(b.h / 270, 0.42, 1.3);
   const n = Math.min(hours.length, Math.max(2, Math.floor(b.w / (46 * k))));
@@ -103,9 +126,16 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box): void {
     if (h.rain >= 20 && step > 30 * k) kit.drawTracked(g, `${h.rain}%`, cx(i), rainBase - bh - 6 * k, { size: 17 * k, family: theme.fonts.sans, color: rainColor, align: 'center' });
   }
   if (!wet) {
-    // Twelve zero bars say nothing; a sentence does.
+    // A row of zero bars says nothing; a sentence does.
     const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista' });
     kit.drawTracked(g, kit.truncate(g, text, b.w, { size: 19 * k, family: theme.fonts.sans }), x0, rainBase - 10 * k, { size: 19 * k, family: theme.fonts.sans, color: theme.colors.inkFaint, tracking: 1 });
+  }
+
+  // Midnight: where tomorrow starts, now that the chart reaches it.
+  g.fillStyle = theme.colors.surfaceEdge;
+  const hourOf = (h: HourForecast) => Number.parseInt(h.label.slice(0, 2), 10);
+  for (let i = 1; i < shown.length; i++) {
+    if (hourOf(shown[i]!) < hourOf(shown[i - 1]!)) g.fillRect(Math.round(cx(i) - step / 2), lineTop - 20 * k, 1, rainBase - lineTop + 20 * k);
   }
 
   // Temperature curve.
@@ -115,6 +145,10 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box): void {
   g.beginPath();
   shown.forEach((h, i) => (i ? g.lineTo(cx(i), yOf(h.temp)) : g.moveTo(cx(i), yOf(h.temp))));
   g.stroke();
+  // Hour labels share one size, shrunk if the widest one ("10pm") would touch its neighbours.
+  const hourFont = { size: 19 * k, family: theme.fonts.sans };
+  const widest = Math.max(...shown.map((h) => kit.measureTracked(g, hourLabel(h.label, p.fmt.hour12), hourFont)));
+  const hourSize = Math.max(9, widest > step * 0.9 ? (hourFont.size * step * 0.9) / widest : hourFont.size);
   for (const [i, h] of shown.entries()) {
     const x = cx(i), y = yOf(h.temp);
     g.fillStyle = theme.colors.warn;
@@ -129,9 +163,9 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box): void {
     const above = Math.max(climb(i - 1), climb(i + 1)) <= 12 * k;
     const below = Math.min(climb(i - 1), climb(i + 1)) >= -6 * k;
     kit.drawTracked(g, `${h.temp}°`, x, above || !below ? y - 12 * k : y + 28 * k, { size: 21 * k, family: theme.fonts.sansBold, color: theme.colors.ink, align: 'center' });
-    // Every hour labelled; the ones divisible by three brighter, to find your way.
-    const hh = Number.parseInt(h.label.slice(0, 2), 10);
-    kit.drawTracked(g, `${h.label.slice(0, 2)}h`, x, bottom, { size: 19 * k, family: theme.fonts.sans, color: hh % 3 === 0 ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
+    // Every column labelled; hour by hour, the ones divisible by three brighter, to find your way.
+    const bright = hourStep > 1 || hourOf(h) % 3 === 0;
+    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12), x, bottom, { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
   }
 }
 

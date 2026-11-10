@@ -32,21 +32,24 @@ Uses: `weather/current`.
 
 | Option | Type | Default | |
 |---|---|---|---|
-| `hours` | boolean | `true` | Next hours |
-| `days` | boolean | `true` | Next days |
-| `moon` | boolean | `true` | Moon phase. Only on wide tiles. |
+| `hours` | number | `12` | Next hours. How far ahead the hourly chart goes, as many hours as fit. 0 hides it. |
+| `hourStep` | number | `1` | One column every. 2 or 3 fit a whole day in a narrow tile. |
+| `days` | number | `3` | Next days. Today included, as many as fit. 0 hides them. |
+| `showMoon` | boolean | `true` | Moon phase. Only on wide tiles. |
+| `showDetails` | boolean | `false` | Feels like, humidity and wind. Under the temperature, when there is room. |
 
 ## Data sources
 
 ### Current weather — `weather/current`
 
-Now and the next hours and days, from Open-Meteo (no key needed), for your location or the place set here. Read every 15 min while a widget uses it. Options are set once in Kiosko → Settings → Data sources.
+Now, the next 48 hours and the next 7 days, from Open-Meteo (no key needed), for your place in Settings or the one set here. Read every 15 min while a widget uses it. Options are set once in Kiosko → Settings → Data sources.
 
 | Option | Type | Default | |
 |---|---|---|---|
-| `name` | string | `""` | Place name. Empty: the one in Settings. |
-| `latitude` | number | `0` | Latitude. 0 and 0: use the location in Settings. |
+| `units` | `metric` \| `imperial` | `"metric"` | Units |
+| `latitude` | number | `0` | Latitude. Leave latitude and longitude at 0 to use the place in Settings. |
 | `longitude` | number | `0` | Longitude |
+| `placeName` | string | `""` | Place name. Empty: the one in Settings. |
 
 ## Development
 

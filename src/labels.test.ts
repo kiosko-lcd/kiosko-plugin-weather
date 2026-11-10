@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert';
 import { localize } from '@kiosko/sdk';
 import { moonPhase } from '@loksly/weather-astro';
-import { dayLabel, describeCode, moonHeadline, staleness } from './labels.ts';
+import { dayLabel, describeCode, moonHeadline } from './labels.ts';
+import { detailsLine, hourLabel } from './draw.ts';
+import plugin, { current, forecast, hoursToShow } from './index.ts';
+import { createBaseContext, defaultsOf, validate } from '@kiosko/sdk';
 import { demoWeather } from './demo.ts';
 
 test('weather: WMO codes become text in both languages', () => {
@@ -13,11 +16,36 @@ test('weather: WMO codes become text in both languages', () => {
   assert.strictEqual(localize(describeCode(1234), 'es'), 'Sin datos');
 });
 
-test('weather: the age of a reading is only shown when it matters', () => {
-  const now = 10 * 3600_000;
-  assert.strictEqual(staleness({ fetched: now - 60_000 }, now), null, 'a fresh reading is not marked');
-  assert.strictEqual(localize(staleness({ fetched: now - 35 * 60_000 }, now)!, 'es'), 'hace 35 min');
-  assert.strictEqual(localize(staleness({ fetched: now - 2 * 3600_000 }, now)!, 'en'), '2 h ago');
+test('weather: the hourly chart takes the hours ahead, one every step', () => {
+  const w = demoWeather(Date.parse('2026-11-05T10:42:00'));
+  assert.strictEqual(hoursToShow(w, 12, 1).length, 12);
+  assert.strictEqual(hoursToShow(w, 0, 1).length, 0, '0 hides the chart');
+  const every3 = hoursToShow(w, 24, 3);
+  assert.deepStrictEqual(every3.map((h) => h.label.slice(0, 2)), ['10', '13', '16', '19', '22', '01', '04', '07']);
+  assert.strictEqual(hoursToShow(w, 48, 1).length, 48, 'the source brings two days');
+});
+
+test('weather: short hour labels follow the clock; details in the reading units', () => {
+  assert.strictEqual(hourLabel('14:00', false), '14h');
+  assert.strictEqual(hourLabel('14:00', true), '2pm');
+  assert.strictEqual(hourLabel('00:00', true), '12am');
+  const w = demoWeather(Date.parse('2026-11-05T10:42:00'));
+  assert.strictEqual(detailsLine(w, (x) => localize(x, 'es')), 'Sensación 10° · 64% · 14 km/h');
+  assert.match(detailsLine({ ...w, units: 'imperial' }, (x) => localize(x, 'en')), /^Feels .* mph$/);
+});
+
+test('weather: forecast options are counts, the source uses the shared place fields', () => {
+  const o = defaultsOf(forecast.options!);
+  assert.deepStrictEqual({ hours: o.hours, days: o.days, hourStep: o.hourStep, showMoon: o.showMoon, showDetails: o.showDetails }, { hours: 12, days: 3, hourStep: 1, showMoon: true, showDetails: false });
+  const s = validate(current.options!, {}).value;
+  assert.deepStrictEqual(s, { units: 'metric', latitude: 0, longitude: 0, placeName: '' });
+  assert.strictEqual(current.timeoutMs, 20_000);
+  assert.ok(plugin.sources?.includes(current));
+});
+
+test('weather: without a place the source fails without touching the network', async () => {
+  const ctx = { ...createBaseContext({ now: Date.now(), dataDir: '/nonexistent' }), options: validate(current.options!, {}).value, signal: new AbortController().signal, intervalMs: 900_000, timeoutMs: 20_000 };
+  await assert.rejects(current.read!(ctx), /no place/);
 });
 
 test('weather: the first forecast day is "today", the rest their weekday', () => {
@@ -37,8 +65,8 @@ test('weather: the demo reading is complete and deterministic', () => {
   const now = Date.parse('2026-11-05T10:42:00');
   const a = demoWeather(now);
   assert.deepStrictEqual(a, demoWeather(now));
-  assert.strictEqual(a.hours.length, 12);
-  assert.strictEqual(a.days.length, 3);
+  assert.strictEqual(a.hours.length, 48);
+  assert.strictEqual(a.days.length, 7);
   assert.strictEqual(a.hours[0]!.label, '10:00');
   assert.ok(a.hours.some((h) => h.rain >= 50), 'there is a shower to draw');
 });
