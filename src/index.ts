@@ -39,7 +39,7 @@ export const current = defineSource({
     if (!place) throw new Error('no place: set your location in Settings or latitude/longitude in this source');
     const { latitude: lat, longitude: lon } = place;
     const name = place.name?.trim() || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-    const file = join(ctx.dataDir, `weather-${lat.toFixed(3)}_${lon.toFixed(3)}${o.units === 'imperial' ? '-imperial' : ''}.json`);
+    const file = join(ctx.cacheDir || ctx.dataDir, `weather-${lat.toFixed(3)}_${lon.toFixed(3)}${o.units === 'imperial' ? '-imperial' : ''}.json`);
     // Most of the read's budget for the request, the rest to fall back to the copy on disk in time.
     const timeoutMs = Math.max(1000, Math.round(ctx.timeoutMs * 0.75));
     const fresh = await fetchWeather({ name, latitude: lat, longitude: lon }, { timeoutMs, signal: ctx.signal, units: o.units }, ctx.log);
@@ -182,7 +182,7 @@ export function hoursToShow(w: Pick<Weather, 'hours'>, ahead: number, step: numb
 export default definePlugin({
   id: 'weather',
   name: { en: 'Weather', es: 'El tiempo' },
-  version: '0.1.0',
+  version: '0.2.1',
   description: { en: 'Weather from Open-Meteo, shared with every widget, and a forecast card.', es: 'El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.' },
   author: 'Kiosko',
   license: 'MIT',
