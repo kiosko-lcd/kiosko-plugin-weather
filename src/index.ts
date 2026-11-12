@@ -182,7 +182,7 @@ export function hoursToShow(w: Pick<Weather, 'hours'>, ahead: number, step: numb
 export default definePlugin({
   id: 'weather',
   name: { en: 'Weather', es: 'El tiempo' },
-  version: '0.2.0',
+  version: '0.2.1',
   description: { en: 'Weather from Open-Meteo, shared with every widget, and a forecast card.', es: 'El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.' },
   author: 'Kiosko',
   license: 'MIT',
