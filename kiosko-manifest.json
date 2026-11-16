@@ -1,0 +1,294 @@
+{
+  "manifest": 1,
+  "id": "weather",
+  "package": "kiosko-plugin-weather",
+  "name": {
+    "en": "Weather",
+    "es": "El tiempo"
+  },
+  "version": "0.2.1",
+  "description": {
+    "en": "Weather from Open-Meteo, shared with every widget, and a forecast card.",
+    "es": "El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión."
+  },
+  "author": "Kiosko",
+  "license": "MIT",
+  "homepage": "https://github.com/kiosko-lcd/kiosko-plugin-weather#readme",
+  "repository": "https://github.com/kiosko-lcd/kiosko-plugin-weather.git",
+  "icon": "cloud-sun",
+  "sdk": "^0.2.0",
+  "platforms": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "languages": [
+    "en",
+    "es"
+  ],
+  "categories": [
+    "info"
+  ],
+  "tags": [
+    "weather",
+    "tiempo",
+    "forecast",
+    "moon"
+  ],
+  "permissions": {
+    "network": [
+      "api.open-meteo.com"
+    ]
+  },
+  "riskyOptions": [],
+  "requires": [],
+  "optional": [],
+  "widgets": [
+    {
+      "type": "weather/forecast",
+      "name": {
+        "en": "Weather forecast",
+        "es": "Previsión del tiempo"
+      },
+      "description": {
+        "en": "Temperature and sky now, the next hours (temperature curve and rain) and days, and the moon when there is room.",
+        "es": "Temperatura y cielo ahora, las próximas horas (curva de temperatura y lluvia) y días, y la luna si hay sitio."
+      },
+      "icon": "cloud-sun",
+      "category": "info",
+      "tags": [
+        "weather",
+        "tiempo",
+        "forecast",
+        "moon"
+      ],
+      "size": {
+        "min": {
+          "w": 120,
+          "h": 70
+        },
+        "preferred": {
+          "w": 900,
+          "h": 300
+        }
+      },
+      "chrome": "card",
+      "sources": [
+        "weather/current"
+      ],
+      "options": {
+        "default": {
+          "hours": 12,
+          "hourStep": 1,
+          "days": 3,
+          "showMoon": true,
+          "showDetails": false
+        },
+        "x-ui": {},
+        "type": "object",
+        "properties": {
+          "hours": {
+            "title": "Next hours",
+            "description": "How far ahead the hourly chart goes, as many hours as fit. 0 hides it.",
+            "default": 12,
+            "x-ui": {
+              "label": {
+                "en": "Next hours",
+                "es": "Próximas horas"
+              },
+              "help": {
+                "en": "How far ahead the hourly chart goes, as many hours as fit. 0 hides it.",
+                "es": "Hasta dónde llega la gráfica por horas, las que quepan. 0 la oculta."
+              },
+              "unit": "h"
+            },
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 48
+          },
+          "hourStep": {
+            "title": "One column every",
+            "description": "2 or 3 fit a whole day in a narrow tile.",
+            "default": 1,
+            "x-ui": {
+              "label": {
+                "en": "One column every",
+                "es": "Una columna cada"
+              },
+              "help": {
+                "en": "2 or 3 fit a whole day in a narrow tile.",
+                "es": "Con 2 o 3 cabe un día entero en una tesela estrecha."
+              },
+              "unit": "h"
+            },
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "days": {
+            "title": "Next days",
+            "description": "Today included, as many as fit. 0 hides them.",
+            "default": 3,
+            "x-ui": {
+              "label": {
+                "en": "Next days",
+                "es": "Próximos días"
+              },
+              "help": {
+                "en": "Today included, as many as fit. 0 hides them.",
+                "es": "Hoy incluido, los que quepan. 0 los oculta."
+              }
+            },
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7
+          },
+          "showMoon": {
+            "title": "Moon phase",
+            "description": "Only on wide tiles.",
+            "default": true,
+            "x-ui": {
+              "label": {
+                "en": "Moon phase",
+                "es": "Fase de la luna"
+              },
+              "help": {
+                "en": "Only on wide tiles.",
+                "es": "Sólo en teselas anchas."
+              }
+            },
+            "type": "boolean"
+          },
+          "showDetails": {
+            "title": "Feels like, humidity and wind",
+            "description": "Under the temperature, when there is room.",
+            "default": false,
+            "x-ui": {
+              "label": {
+                "en": "Feels like, humidity and wind",
+                "es": "Sensación, humedad y viento"
+              },
+              "help": {
+                "en": "Under the temperature, when there is room.",
+                "es": "Bajo la temperatura, si hay sitio."
+              }
+            },
+            "type": "boolean"
+          }
+        }
+      },
+      "screenshot": "docs/forecast.png",
+      "animated": false,
+      "urgent": false
+    }
+  ],
+  "sources": [
+    {
+      "type": "weather/current",
+      "name": {
+        "en": "Current weather",
+        "es": "Tiempo actual"
+      },
+      "description": {
+        "en": "Now, the next 48 hours and the next 7 days, from Open-Meteo (no key needed), for your place in Settings or the one set here.",
+        "es": "Ahora, las próximas 48 horas y los próximos 7 días, de Open-Meteo (sin clave), para tu lugar de los ajustes o el que pongas aquí."
+      },
+      "polled": true,
+      "intervalMs": 900000,
+      "options": {
+        "default": {
+          "units": "metric",
+          "latitude": 0,
+          "longitude": 0,
+          "placeName": ""
+        },
+        "x-ui": {},
+        "type": "object",
+        "properties": {
+          "units": {
+            "title": "Units",
+            "default": "metric",
+            "x-ui": {
+              "label": {
+                "en": "Units",
+                "es": "Unidades"
+              },
+              "labels": {
+                "metric": {
+                  "en": "Metric (°C, km/h)",
+                  "es": "Métricas (°C, km/h)"
+                },
+                "imperial": {
+                  "en": "Imperial (°F, mph)",
+                  "es": "Imperiales (°F, mph)"
+                }
+              }
+            },
+            "type": "string",
+            "enum": [
+              "metric",
+              "imperial"
+            ]
+          },
+          "latitude": {
+            "title": "Latitude",
+            "description": "Leave latitude and longitude at 0 to use the place in Settings.",
+            "default": 0,
+            "x-ui": {
+              "label": {
+                "en": "Latitude",
+                "es": "Latitud"
+              },
+              "help": {
+                "en": "Leave latitude and longitude at 0 to use the place in Settings.",
+                "es": "Con latitud y longitud a 0 se usa el lugar de los ajustes."
+              },
+              "advanced": true,
+              "unit": "°",
+              "step": 0.0001
+            },
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "title": "Longitude",
+            "default": 0,
+            "x-ui": {
+              "label": {
+                "en": "Longitude",
+                "es": "Longitud"
+              },
+              "advanced": true,
+              "unit": "°",
+              "step": 0.0001
+            },
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "placeName": {
+            "title": "Place name",
+            "description": "Empty: the one in Settings.",
+            "default": "",
+            "x-ui": {
+              "label": {
+                "en": "Place name",
+                "es": "Nombre del lugar"
+              },
+              "help": {
+                "en": "Empty: the one in Settings.",
+                "es": "Vacío: el de los ajustes."
+              },
+              "advanced": true,
+              "placeholder": "Madrid"
+            },
+            "type": "string"
+          }
+        }
+      }
+    }
+  ],
+  "interludes": [],
+  "templates": []
+}
