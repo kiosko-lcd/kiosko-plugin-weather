@@ -20,6 +20,10 @@ npm install --prefix ~/.config/kiosko/plugins kiosko-plugin-weather
 
 - Your location in Kiosko → Settings (Open-Meteo, no key needed).
 
+## What it does on your machine
+
+- **Internet**: contacts `api.open-meteo.com`.
+
 ## Widgets
 
 ### Weather forecast — `weather/forecast`
