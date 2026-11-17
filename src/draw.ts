@@ -165,7 +165,8 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
     kit.drawTracked(g, `${h.temp}°`, x, above || !below ? y - 12 * k : y + 28 * k, { size: 21 * k, family: theme.fonts.sansBold, color: theme.colors.ink, align: 'center' });
     // Every column labelled; hour by hour, the ones divisible by three brighter, to find your way.
     const bright = hourStep > 1 || hourOf(h) % 3 === 0;
-    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12), x, bottom, { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
+    // The baseline sits above the bottom by the descent of "pm": its p would hang out of the box.
+    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12), x, bottom - Math.ceil(hourSize * 0.24), { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
   }
 }
 
