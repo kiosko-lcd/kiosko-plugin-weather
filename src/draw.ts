@@ -35,7 +35,7 @@ export function drawTiny(p: Painter, w: Weather, b: Box): void {
 /** Feels like, humidity and wind, in the reading's units. */
 export function detailsLine(w: Weather, t: (text: Localized) => string): string {
   const wind = `${w.wind} ${w.units === 'imperial' ? 'mph' : 'km/h'}`;
-  return `${t({ en: 'Feels', es: 'Sensación' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
+  return `${t({ en: 'Feels', es: 'Sensación', 'zh-Hant': '體感', 'zh-Hans': '体感' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
 }
 
 /**
@@ -76,10 +76,16 @@ export function drawNow(p: Pick<Painter, 'g' | 'kit' | 'theme' | 't' | 'fmt' | '
   }
 }
 
-/** "14h", or "2pm" on a 12-hour clock: short, for a column. */
-export function hourLabel(label: string, hour12: boolean): string {
+/**
+ * "14h", or "2pm" on a 12-hour clock: short, for a column. Chinese writes the
+ * hour as 時/时 on a 24-hour count, as weather services there do ("14時"),
+ * even with a 12-hour clock elsewhere: 下午 would not fit a column.
+ */
+export function hourLabel(label: string, hour12: boolean, t?: (text: Localized) => string): string {
   const hh = Number.parseInt(label.slice(0, 2), 10);
   if (!Number.isFinite(hh)) return label;
+  const zh = t?.({ en: '', es: '', 'zh-Hant': '時', 'zh-Hans': '时' });
+  if (zh) return `${hh}${zh}`;
   return hour12 ? `${hh % 12 || 12}${hh < 12 ? 'am' : 'pm'}` : `${label.slice(0, 2)}h`;
 }
 
@@ -127,7 +133,7 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
   }
   if (!wet) {
     // A row of zero bars says nothing; a sentence does.
-    const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista' });
+    const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista', 'zh-Hant': '預計不會下雨', 'zh-Hans': '预计无降水' });
     kit.drawTracked(g, kit.truncate(g, text, b.w, { size: 19 * k, family: theme.fonts.sans }), x0, rainBase - 10 * k, { size: 19 * k, family: theme.fonts.sans, color: theme.colors.inkFaint, tracking: 1 });
   }
 
@@ -147,7 +153,7 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
   g.stroke();
   // Hour labels share one size, shrunk if the widest one ("10pm") would touch its neighbours.
   const hourFont = { size: 19 * k, family: theme.fonts.sans };
-  const widest = Math.max(...shown.map((h) => kit.measureTracked(g, hourLabel(h.label, p.fmt.hour12), hourFont)));
+  const widest = Math.max(...shown.map((h) => kit.measureTracked(g, hourLabel(h.label, p.fmt.hour12, p.t), hourFont)));
   const hourSize = Math.max(9, widest > step * 0.9 ? (hourFont.size * step * 0.9) / widest : hourFont.size);
   for (const [i, h] of shown.entries()) {
     const x = cx(i), y = yOf(h.temp);
@@ -166,7 +172,7 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
     // Every column labelled; hour by hour, the ones divisible by three brighter, to find your way.
     const bright = hourStep > 1 || hourOf(h) % 3 === 0;
     // The baseline sits above the bottom by the descent of "pm": its p would hang out of the box.
-    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12), x, bottom - Math.ceil(hourSize * 0.24), { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
+    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12, p.t), x, bottom - Math.ceil(hourSize * 0.24), { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
   }
 }
 

@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { localize } from '@kiosko/sdk';
 import { moonPhase } from '@loksly/weather-astro';
 import { dayLabel, describeCode, moonHeadline } from './labels.ts';
+import type { Localized } from '@kiosko/sdk';
 import { detailsLine, hourLabel } from './draw.ts';
 import plugin, { current, forecast, hoursToShow } from './index.ts';
 import { createBaseContext, defaultsOf, validate } from '@kiosko/sdk';
@@ -29,6 +30,10 @@ test('weather: short hour labels follow the clock; details in the reading units'
   assert.strictEqual(hourLabel('14:00', false), '14h');
   assert.strictEqual(hourLabel('14:00', true), '2pm');
   assert.strictEqual(hourLabel('00:00', true), '12am');
+  const zh = (l: string) => (text: Localized) => (typeof text === 'string' ? text : (text[l] ?? text.en));
+  assert.strictEqual(hourLabel('14:00', true, zh('zh-Hant')), '14時');
+  assert.strictEqual(hourLabel('09:00', false, zh('zh-Hans')), '9时');
+  assert.strictEqual(hourLabel('14:00', true, zh('en')), '2pm');
   const w = demoWeather(Date.parse('2026-11-05T10:42:00'));
   assert.strictEqual(detailsLine(w, (x) => localize(x, 'es')), 'Sensación 10° · 64% · 14 km/h');
   assert.match(detailsLine({ ...w, units: 'imperial' }, (x) => localize(x, 'en')), /^Feels .* mph$/);
