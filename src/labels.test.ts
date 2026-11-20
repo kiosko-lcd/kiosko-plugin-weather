@@ -59,6 +59,7 @@ test('weather: the first forecast day is "today", the rest their weekday', () =>
   assert.strictEqual(dayLabel('2026-11-05', 0, 'es', t), 'Hoy');
   assert.match(dayLabel('2026-11-06', 1, 'es', t), /^Vie/);
   assert.match(dayLabel('2026-11-07', 1, 'en', (x) => localize(x, 'en')), /^Sat/);
+  assert.strictEqual(dayLabel('2026-11-06', 1, 'de', (x) => localize(x, 'de')), 'Fr');
 });
 
 test('weather: the moon counts down to the nearest milestone', () => {
@@ -72,6 +73,8 @@ test('weather: the moon counts down to the nearest milestone', () => {
   assert.strictEqual(moonHeadline(moon(20, 3), ctx('es')), 'Nueva en 3 días');
   assert.strictEqual(moonHeadline(moon(5, 20), ctx('zh-TW')), '5 天後滿月');
   assert.strictEqual(moonHeadline(moon(20, 3), ctx('zh-CN')), '3 天后新月');
+  assert.strictEqual(moonHeadline(moon(1, 20), ctx('de')), 'Morgen Vollmond');
+  assert.strictEqual(moonHeadline(moon(20, 3), ctx('de-AT')), 'Neumond in 3 Tagen');
 });
 
 test('weather: the demo reading is complete and deterministic', () => {
