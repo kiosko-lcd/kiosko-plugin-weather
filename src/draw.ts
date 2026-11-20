@@ -85,9 +85,13 @@ export function drawNow(p: Pick<Painter, 'g' | 'kit' | 'theme' | 't' | 'fmt' | '
 export function hourLabel(label: string, hour12: boolean, t?: (text: Localized) => string): string {
   const hh = Number.parseInt(label.slice(0, 2), 10);
   if (!Number.isFinite(hh)) return label;
-  const zh = t?.({ en: '', es: '', 'zh-Hant': '時', 'zh-Hans': '时' });
-  if (zh) return `${hh}${zh}`;
-  return hour12 ? `${hh % 12 || 12}${hh < 12 ? 'am' : 'pm'}` : `${label.slice(0, 2)}h`;
+  // How each language writes an hour on an axis; `{h}` is 0-23, `{h12}` and `{ampm}` the 12-hour clock.
+  const format = t?.({ en: hour12 ? '{h12}{ampm}' : '{hh}h', es: hour12 ? '{h12}{ampm}' : '{hh}h', 'zh-Hant': '{h}時', 'zh-Hans': '{h}时' }) ?? (hour12 ? '{h12}{ampm}' : '{hh}h');
+  return format
+    .replace('{h12}', String(hh % 12 || 12))
+    .replace('{ampm}', hh < 12 ? 'am' : 'pm')
+    .replace('{hh}', label.slice(0, 2))
+    .replace('{h}', String(hh));
 }
 
 /**
@@ -135,7 +139,9 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
   if (!wet) {
     // A row of zero bars says nothing; a sentence does.
     const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista', 'zh-Hant': '預計不會下雨', 'zh-Hans': '预计无降水' });
-    kit.drawTracked(g, kit.truncate(g, text, b.w, { size: 19 * k, family: theme.fonts.sans }), x0, rainBase - 10 * k, { size: 19 * k, family: theme.fonts.sans, color: theme.colors.inkFaint, tracking: 1 });
+    // Measured as it is drawn (with its tracking), or a cut text still overflows.
+    const look = { size: 19 * k, family: theme.fonts.sans, tracking: 1 };
+    kit.drawTracked(g, kit.truncate(g, text, b.w, look), x0, rainBase - 10 * k, { ...look, color: theme.colors.inkFaint });
   }
 
   // Midnight: where tomorrow starts, now that the chart reaches it.
