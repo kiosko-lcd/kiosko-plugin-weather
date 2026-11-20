@@ -4,6 +4,7 @@
  * Two days of hours and seven days, like the source. Derived from `now`
  * only, so the same instant always draws the same card.
  */
+import { localize } from '@kiosko/sdk';
 import type { DayForecast, HourForecast, Weather } from '@loksly/weather-astro';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -13,7 +14,7 @@ function tempAt(hour: number): number {
   return 11 + 5 * Math.cos(((hour - 15) / 24) * 2 * Math.PI);
 }
 
-export function demoWeather(now: number): Weather {
+export function demoWeather(now: number, locale = 'en'): Weather {
   const d = new Date(now);
   const h0 = d.getHours();
   const hours: HourForecast[] = Array.from({ length: 48 }, (_, i) => {
@@ -37,7 +38,8 @@ export function demoWeather(now: number): Weather {
     { date: iso(6), code: 63, min: 8, max: 12, rain: 85 },
   ];
   return {
-    place: 'Madrid',
+    // The place as a user there would have typed it in Settings.
+    place: localize({ en: 'Madrid', es: 'Madrid', de: 'Madrid', 'zh-Hant': '馬德里', 'zh-Hans': '马德里' }, locale),
     latitude: 40.42,
     longitude: -3.7,
     temp: Math.round(tempAt(h0 + d.getMinutes() / 60)),

@@ -66,7 +66,7 @@ export const current = defineSource({
     if (last) return last;
     throw new Error('Open-Meteo did not answer and there is no recent reading on disk');
   },
-  demo: ({ now }) => demoWeather(now),
+  demo: ({ now, locale }) => demoWeather(now, locale),
 });
 
 export const forecast = defineWidget({
@@ -181,7 +181,7 @@ export const forecast = defineWidget({
     if (hasHours && below >= 110) drawHourly(p, hours, area, options.hourStep);
     else if (hasDays && !daysW) drawDays(p, days, area);
   },
-  demo: ({ now }) => ({ sources: { 'weather/current': demoWeather(now) } }),
+  demo: ({ now, locale }) => ({ sources: { 'weather/current': demoWeather(now, locale) } }),
 });
 
 /**
