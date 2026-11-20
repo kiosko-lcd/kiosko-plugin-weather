@@ -187,6 +187,7 @@ export default definePlugin({
   id: 'weather',
   name: { en: 'Weather', es: 'El tiempo', 'zh-Hant': '天氣', 'zh-Hans': '天气' },
   version: '0.2.1',
+  languages: ['en', 'es', 'zh-Hant', 'zh-Hans'],
   sdk: '^0.2.0',
   permissions: { network: ['api.open-meteo.com'] },
   description: { en: 'Weather from Open-Meteo, shared with every widget, and a forecast card.', es: 'El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.', 'zh-Hant': '來自 Open-Meteo 的天氣，供所有小工具共用，另附一張預報卡片。', 'zh-Hans': '来自 Open-Meteo 的天气，供所有小组件共享，另附一张预报卡片。' },
