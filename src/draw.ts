@@ -5,7 +5,7 @@
  * the same code serves a 300×200 corner and a full 1920×462 strip.
  */
 import { iconFor, moonPhase, type DayForecast, type HourForecast, type Weather } from '@loksly/weather-astro';
-import type { Box, Formatters, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
+import type { BaseContext, Box, Formatters, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
 import { dayLabel, describeCode, moonHeadline, moonName, STALE_AFTER_MS } from './labels.ts';
 
 export interface Painter {
@@ -13,6 +13,7 @@ export interface Painter {
   kit: RenderContext<unknown, unknown>['kit'];
   theme: Theme;
   t: (text: Localized) => string;
+  plural: BaseContext['plural'];
   fmt: Formatters;
   locale: string;
   now: number;
@@ -224,7 +225,7 @@ export function drawMoon(p: Painter, b: Box): void {
   kit.drawMoonPhase(g, m, cx, top + disc / 2, disc, theme.colors.ink);
   const name = t(moonName(m));
   kit.drawTracked(g, kit.truncate(g, name, b.w, { size: S, family: theme.fonts.sans }), cx, top + disc + S * 1.8, { size: S, family: theme.fonts.sans, color: theme.colors.inkDim, align: 'center' });
-  const sub = `${Math.round(m.illumination * 100)}% · ${t(moonHeadline(m))}`;
+  const sub = `${Math.round(m.illumination * 100)}% · ${moonHeadline(m, p)}`;
   const ss = S * 0.85;
   kit.drawTracked(g, kit.truncate(g, sub, b.w, { size: ss, family: theme.fonts.sans }), cx, top + disc + S * 3.4, { size: ss, family: theme.fonts.sans, color: theme.colors.inkFaint, align: 'center' });
 }

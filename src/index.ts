@@ -9,7 +9,7 @@
  */
 import { join } from 'node:path';
 import { fetchWeather, loadWeather, saveWeather, type Weather } from '@loksly/weather-astro';
-import { definePlugin, defineSource, defineWidget, locationOptions, placeOf, t, type Box } from '@kiosko/sdk';
+import { definePlugin, defineSource, defineWidget, locationOptions, placeOf, PluginError, t, type Box } from '@kiosko/sdk';
 import { demoWeather } from './demo.ts';
 import { drawDays, drawHourly, drawMoon, drawNow, drawTiny, rule, type Painter } from './draw.ts';
 
@@ -38,7 +38,14 @@ export const current = defineSource({
   async read(ctx): Promise<Weather> {
     const { options: o } = ctx;
     const place = placeOf(o, ctx.location);
-    if (!place) throw new Error('no place: set your location in Settings or latitude/longitude in this source');
+    if (!place) {
+      throw new PluginError({
+        en: 'No place: set your location in Settings, or latitude and longitude in this source',
+        es: 'Sin ubicación: pon tu ubicación en Ajustes, o latitud y longitud en esta fuente',
+        'zh-Hant': '沒有位置：請在「設定」中設定你的位置，或在此資料來源中填入緯度和經度',
+        'zh-Hans': '没有位置：请在“设置”中设置你的位置，或在此数据源中填写纬度和经度',
+      });
+    }
     const { latitude: lat, longitude: lon } = place;
     const name = place.name?.trim() || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
     const file = join(ctx.cacheDir || ctx.dataDir, `weather-${lat.toFixed(3)}_${lon.toFixed(3)}${o.units === 'imperial' ? '-imperial' : ''}.json`);
@@ -105,7 +112,7 @@ export const forecast = defineWidget({
   render(g, ctx) {
     const { box, theme, kit, options } = ctx;
     const w = ctx.sources['weather/current'] as Weather | undefined;
-    const p: Painter = { g, kit, theme, t: ctx.t, fmt: ctx.fmt, locale: ctx.locale, now: ctx.now };
+    const p: Painter = { g, kit, theme, t: ctx.t, plural: ctx.plural, fmt: ctx.fmt, locale: ctx.locale, now: ctx.now };
     if (!w) {
       const size = Math.max(10, Math.min(24, box.h / 5));
       const msg = ctx.t({ en: 'No weather yet', es: 'Aún sin datos del tiempo', 'zh-Hant': '尚無天氣資料', 'zh-Hans': '暂无天气数据' });

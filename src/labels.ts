@@ -2,7 +2,7 @@
  * Texts of the weather card, in the user's language: WMO codes, moon phases
  * and how old a reading is. Kept apart from the drawing so they can be tested.
  */
-import type { Localized } from '@kiosko/sdk';
+import type { BaseContext, Localized } from '@kiosko/sdk';
 import type { Moon, PhaseName } from '@loksly/weather-astro';
 
 /** WMO code → text. Codes not listed are not emitted by the Open-Meteo endpoint. */
@@ -63,13 +63,19 @@ export function moonName(m: Moon): Localized {
  * The line under the moon. Close to full it counts down to it; just after,
  * to the new moon, which is the next milestone anyone cares about.
  */
-export function moonHeadline(m: Moon): Localized {
-  if (m.daysToFull === 0) return { en: 'Full today', es: 'Llena hoy', 'zh-Hant': '今天滿月', 'zh-Hans': '今天满月' };
-  if (m.daysToNew === 0) return { en: 'New today', es: 'Nueva hoy', 'zh-Hant': '今天新月', 'zh-Hans': '今天新月' };
+export function moonHeadline(m: Moon, ctx: Pick<BaseContext, 't' | 'plural'>): string {
+  const { t, plural } = ctx;
+  if (m.daysToFull === 0) return t({ en: 'Full today', es: 'Llena hoy', 'zh-Hant': '今天滿月', 'zh-Hans': '今天满月' });
+  if (m.daysToNew === 0) return t({ en: 'New today', es: 'Nueva hoy', 'zh-Hant': '今天新月', 'zh-Hans': '今天新月' });
+  // "Tomorrow" is a word of its own, not the count's singular.
   if (m.daysToFull <= m.daysToNew) {
-    return m.daysToFull === 1 ? { en: 'Full tomorrow', es: 'Llena mañana', 'zh-Hant': '明天滿月', 'zh-Hans': '明天满月' } : { en: `Full in ${m.daysToFull} days`, es: `Llena en ${m.daysToFull} días`, 'zh-Hant': `${m.daysToFull} 天後滿月`, 'zh-Hans': `${m.daysToFull} 天后满月` };
+    return m.daysToFull === 1
+      ? t({ en: 'Full tomorrow', es: 'Llena mañana', 'zh-Hant': '明天滿月', 'zh-Hans': '明天满月' })
+      : plural(m.daysToFull, { en: { one: 'Full in {n} day', other: 'Full in {n} days' }, es: { one: 'Llena en {n} día', other: 'Llena en {n} días' }, 'zh-Hant': { other: '{n} 天後滿月' }, 'zh-Hans': { other: '{n} 天后满月' } });
   }
-  return m.daysToNew === 1 ? { en: 'New tomorrow', es: 'Nueva mañana', 'zh-Hant': '明天新月', 'zh-Hans': '明天新月' } : { en: `New in ${m.daysToNew} days`, es: `Nueva en ${m.daysToNew} días`, 'zh-Hant': `${m.daysToNew} 天後新月`, 'zh-Hans': `${m.daysToNew} 天后新月` };
+  return m.daysToNew === 1
+    ? t({ en: 'New tomorrow', es: 'Nueva mañana', 'zh-Hant': '明天新月', 'zh-Hans': '明天新月' })
+    : plural(m.daysToNew, { en: { one: 'New in {n} day', other: 'New in {n} days' }, es: { one: 'Nueva en {n} día', other: 'Nueva en {n} días' }, 'zh-Hant': { other: '{n} 天後新月' }, 'zh-Hans': { other: '{n} 天后新月' } });
 }
 
 /** A reading older than this gets its age under the temperature ("35 min ago"). */
