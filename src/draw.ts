@@ -36,7 +36,7 @@ export function drawTiny(p: Painter, w: Weather, b: Box): void {
 /** Feels like, humidity and wind, in the reading's units. */
 export function detailsLine(w: Weather, t: (text: Localized) => string): string {
   const wind = `${w.wind} ${w.units === 'imperial' ? 'mph' : 'km/h'}`;
-  return `${t({ en: 'Feels', es: 'Sensación', 'zh-Hant': '體感', 'zh-Hans': '体感' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
+  return `${t({ en: 'Feels', es: 'Sensación', de: 'Gefühlt', 'zh-Hant': '體感', 'zh-Hans': '体感' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
 }
 
 /**
@@ -86,7 +86,7 @@ export function hourLabel(label: string, hour12: boolean, t?: (text: Localized) 
   const hh = Number.parseInt(label.slice(0, 2), 10);
   if (!Number.isFinite(hh)) return label;
   // How each language writes an hour on an axis; `{h}` is 0-23, `{h12}` and `{ampm}` the 12-hour clock.
-  const format = t?.({ en: hour12 ? '{h12}{ampm}' : '{hh}h', es: hour12 ? '{h12}{ampm}' : '{hh}h', 'zh-Hant': '{h}時', 'zh-Hans': '{h}时' }) ?? (hour12 ? '{h12}{ampm}' : '{hh}h');
+  const format = t?.({ en: hour12 ? '{h12}{ampm}' : '{hh}h', es: hour12 ? '{h12}{ampm}' : '{hh}h', de: '{hh}h', 'zh-Hant': '{h}時', 'zh-Hans': '{h}时' }) ?? (hour12 ? '{h12}{ampm}' : '{hh}h');
   return format
     .replace('{h12}', String(hh % 12 || 12))
     .replace('{ampm}', hh < 12 ? 'am' : 'pm')
@@ -138,7 +138,7 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
   }
   if (!wet) {
     // A row of zero bars says nothing; a sentence does.
-    const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista', 'zh-Hant': '預計不會下雨', 'zh-Hans': '预计无降水' });
+    const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista', de: 'Kein Regen', 'zh-Hant': '預計不會下雨', 'zh-Hans': '预计无降水' });
     // Measured as it is drawn (with its tracking), or a cut text still overflows.
     const look = { size: 19 * k, family: theme.fonts.sans, tracking: 1 };
     kit.drawTracked(g, kit.truncate(g, text, b.w, look), x0, rainBase - 10 * k, { ...look, color: theme.colors.inkFaint });

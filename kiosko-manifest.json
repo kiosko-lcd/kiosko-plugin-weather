@@ -5,6 +5,7 @@
   "name": {
     "en": "Weather",
     "es": "El tiempo",
+    "de": "Wetter",
     "zh-Hant": "天氣",
     "zh-Hans": "天气"
   },
@@ -12,6 +13,7 @@
   "description": {
     "en": "Weather from Open-Meteo, shared with every widget, and a forecast card.",
     "es": "El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.",
+    "de": "Wetter von Open-Meteo, geteilt mit allen Widgets, und eine Vorhersagekarte.",
     "zh-Hant": "來自 Open-Meteo 的天氣，供所有小工具共用，另附一張預報卡片。",
     "zh-Hans": "来自 Open-Meteo 的天气，供所有小组件共享，另附一张预报卡片。"
   },
@@ -29,6 +31,7 @@
   "languages": [
     "en",
     "es",
+    "de",
     "zh-Hant",
     "zh-Hans"
   ],
@@ -55,12 +58,14 @@
       "name": {
         "en": "Weather forecast",
         "es": "Previsión del tiempo",
+        "de": "Wettervorhersage",
         "zh-Hant": "天氣預報",
         "zh-Hans": "天气预报"
       },
       "description": {
         "en": "Temperature and sky now, the next hours (temperature curve and rain) and days, and the moon when there is room.",
         "es": "Temperatura y cielo ahora, las próximas horas (curva de temperatura y lluvia) y días, y la luna si hay sitio.",
+        "de": "Temperatur und Himmel jetzt, die nächsten Stunden (Temperaturkurve und Regen) und Tage, und der Mond, wenn Platz ist.",
         "zh-Hant": "現在的溫度與天空狀況、未來幾小時（溫度曲線與降雨）和未來幾天，空間足夠時還有月相。",
         "zh-Hans": "当前温度和天空状况、未来几小时（温度曲线和降水）和未来几天，空间足够时还有月相。"
       },
@@ -105,12 +110,14 @@
               "label": {
                 "en": "Next hours",
                 "es": "Próximas horas",
+                "de": "Nächste Stunden",
                 "zh-Hant": "未來幾小時",
                 "zh-Hans": "未来几小时"
               },
               "help": {
                 "en": "How far ahead the hourly chart goes, as many hours as fit. 0 hides it.",
                 "es": "Hasta dónde llega la gráfica por horas, las que quepan. 0 la oculta.",
+                "de": "Wie weit das Stundendiagramm reicht, so viele Stunden wie passen. 0 blendet es aus.",
                 "zh-Hant": "逐時圖表涵蓋的時間長度，能放幾小時就放幾小時。0 表示隱藏。",
                 "zh-Hans": "逐小时图表覆盖的时间长度，能放几小时就放几小时。0 表示隐藏。"
               },
@@ -128,12 +135,14 @@
               "label": {
                 "en": "One column every",
                 "es": "Una columna cada",
+                "de": "Eine Spalte alle",
                 "zh-Hant": "每欄間隔",
                 "zh-Hans": "每列间隔"
               },
               "help": {
                 "en": "2 or 3 fit a whole day in a narrow tile.",
                 "es": "Con 2 o 3 cabe un día entero en una tesela estrecha.",
+                "de": "Mit 2 oder 3 passt ein ganzer Tag in eine schmale Kachel.",
                 "zh-Hant": "設為 2 或 3，窄方格也能放下一整天。",
                 "zh-Hans": "设为 2 或 3，窄格子也能放下一整天。"
               },
@@ -151,12 +160,14 @@
               "label": {
                 "en": "Next days",
                 "es": "Próximos días",
+                "de": "Nächste Tage",
                 "zh-Hant": "未來幾天",
                 "zh-Hans": "未来几天"
               },
               "help": {
                 "en": "Today included, as many as fit. 0 hides them.",
                 "es": "Hoy incluido, los que quepan. 0 los oculta.",
+                "de": "Heute eingeschlossen, so viele wie passen. 0 blendet sie aus.",
                 "zh-Hant": "包含今天，能放幾天就放幾天。0 表示隱藏。",
                 "zh-Hans": "包含今天，能放几天就放几天。0 表示隐藏。"
               }
@@ -173,12 +184,14 @@
               "label": {
                 "en": "Moon phase",
                 "es": "Fase de la luna",
+                "de": "Mondphase",
                 "zh-Hant": "月相",
                 "zh-Hans": "月相"
               },
               "help": {
                 "en": "Only on wide tiles.",
                 "es": "Sólo en teselas anchas.",
+                "de": "Nur auf breiten Kacheln.",
                 "zh-Hant": "僅限寬方格。",
                 "zh-Hans": "仅限宽格子。"
               }
@@ -193,12 +206,14 @@
               "label": {
                 "en": "Feels like, humidity and wind",
                 "es": "Sensación, humedad y viento",
+                "de": "Gefühlte Temperatur, Luftfeuchte und Wind",
                 "zh-Hant": "體感溫度、濕度與風",
                 "zh-Hans": "体感温度、湿度和风"
               },
               "help": {
                 "en": "Under the temperature, when there is room.",
                 "es": "Bajo la temperatura, si hay sitio.",
+                "de": "Unter der Temperatur, wenn Platz ist.",
                 "zh-Hant": "顯示在溫度下方，空間足夠時。",
                 "zh-Hans": "显示在温度下方，空间足够时。"
               }
@@ -218,12 +233,14 @@
       "name": {
         "en": "Current weather",
         "es": "Tiempo actual",
+        "de": "Aktuelles Wetter",
         "zh-Hant": "目前天氣",
         "zh-Hans": "当前天气"
       },
       "description": {
         "en": "Now, the next 48 hours and the next 7 days, from Open-Meteo (no key needed), for your place in Settings or the one set here.",
         "es": "Ahora, las próximas 48 horas y los próximos 7 días, de Open-Meteo (sin clave), para tu lugar de los ajustes o el que pongas aquí.",
+        "de": "Jetzt, die nächsten 48 Stunden und die nächsten 7 Tage, von Open-Meteo (kein Schlüssel nötig), für deinen Ort aus den Einstellungen oder den hier angegebenen.",
         "zh-Hant": "現在、未來 48 小時與未來 7 天的天氣，來自 Open-Meteo（不需金鑰），地點取自「設定」或在此指定。",
         "zh-Hans": "现在、未来 48 小时和未来 7 天的天气，来自 Open-Meteo（无需密钥），地点取自“设置”或在此指定。"
       },
@@ -246,6 +263,7 @@
               "label": {
                 "en": "Units",
                 "es": "Unidades",
+                "de": "Einheiten",
                 "zh-Hant": "單位",
                 "zh-Hans": "单位"
               },
@@ -253,12 +271,14 @@
                 "metric": {
                   "en": "Metric (°C, km/h)",
                   "es": "Métricas (°C, km/h)",
+                  "de": "Metrisch (°C, km/h)",
                   "zh-Hant": "公制（°C、km/h）",
                   "zh-Hans": "公制（°C、km/h）"
                 },
                 "imperial": {
                   "en": "Imperial (°F, mph)",
                   "es": "Imperiales (°F, mph)",
+                  "de": "Imperial (°F, mph)",
                   "zh-Hant": "英制（°F、mph）",
                   "zh-Hans": "英制（°F、mph）"
                 }
@@ -278,12 +298,14 @@
               "label": {
                 "en": "Latitude",
                 "es": "Latitud",
+                "de": "Breitengrad",
                 "zh-Hant": "緯度",
                 "zh-Hans": "纬度"
               },
               "help": {
                 "en": "Leave latitude and longitude at 0 to use the place in Settings.",
                 "es": "Con latitud y longitud a 0 se usa el lugar de los ajustes.",
+                "de": "Breiten- und Längengrad auf 0 lassen, um den Ort aus den Einstellungen zu verwenden.",
                 "zh-Hant": "緯度和經度保持 0 即使用設定中的地點。",
                 "zh-Hans": "纬度和经度保持为 0 时使用设置中的地点。"
               },
@@ -302,6 +324,7 @@
               "label": {
                 "en": "Longitude",
                 "es": "Longitud",
+                "de": "Längengrad",
                 "zh-Hant": "經度",
                 "zh-Hans": "经度"
               },
@@ -321,12 +344,14 @@
               "label": {
                 "en": "Place name",
                 "es": "Nombre del lugar",
+                "de": "Ortsname",
                 "zh-Hant": "地點名稱",
                 "zh-Hans": "地点名称"
               },
               "help": {
                 "en": "Empty: the one in Settings.",
                 "es": "Vacío: el de los ajustes.",
+                "de": "Leer: der aus den Einstellungen.",
                 "zh-Hant": "留空：使用設定中的地點。",
                 "zh-Hans": "留空：使用设置中的地点。"
               },
