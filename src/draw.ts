@@ -5,7 +5,7 @@
  * the same code serves a 300×200 corner and a full 1920×462 strip.
  */
 import { iconFor, moonPhase, type DayForecast, type HourForecast, type Weather } from '@loksly/weather-astro';
-import type { Box, Formatters, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
+import type { BaseContext, Box, Formatters, Graphics, Localized, RenderContext, Theme } from '@kiosko/sdk';
 import { dayLabel, describeCode, moonHeadline, moonName, STALE_AFTER_MS } from './labels.ts';
 
 export interface Painter {
@@ -13,6 +13,7 @@ export interface Painter {
   kit: RenderContext<unknown, unknown>['kit'];
   theme: Theme;
   t: (text: Localized) => string;
+  plural: BaseContext['plural'];
   fmt: Formatters;
   locale: string;
   now: number;
@@ -35,7 +36,7 @@ export function drawTiny(p: Painter, w: Weather, b: Box): void {
 /** Feels like, humidity and wind, in the reading's units. */
 export function detailsLine(w: Weather, t: (text: Localized) => string): string {
   const wind = `${w.wind} ${w.units === 'imperial' ? 'mph' : 'km/h'}`;
-  return `${t({ en: 'Feels', es: 'Sensación' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
+  return `${t({ en: 'Feels', es: 'Sensación', 'zh-Hant': '體感', 'zh-Hans': '体感' })} ${w.feels}° · ${w.humidity}% · ${wind}`;
 }
 
 /**
@@ -76,11 +77,21 @@ export function drawNow(p: Pick<Painter, 'g' | 'kit' | 'theme' | 't' | 'fmt' | '
   }
 }
 
-/** "14h", or "2pm" on a 12-hour clock: short, for a column. */
-export function hourLabel(label: string, hour12: boolean): string {
+/**
+ * "14h", or "2pm" on a 12-hour clock: short, for a column. Chinese writes the
+ * hour as 時/时 on a 24-hour count, as weather services there do ("14時"),
+ * even with a 12-hour clock elsewhere: 下午 would not fit a column.
+ */
+export function hourLabel(label: string, hour12: boolean, t?: (text: Localized) => string): string {
   const hh = Number.parseInt(label.slice(0, 2), 10);
   if (!Number.isFinite(hh)) return label;
-  return hour12 ? `${hh % 12 || 12}${hh < 12 ? 'am' : 'pm'}` : `${label.slice(0, 2)}h`;
+  // How each language writes an hour on an axis; `{h}` is 0-23, `{h12}` and `{ampm}` the 12-hour clock.
+  const format = t?.({ en: hour12 ? '{h12}{ampm}' : '{hh}h', es: hour12 ? '{h12}{ampm}' : '{hh}h', 'zh-Hant': '{h}時', 'zh-Hans': '{h}时' }) ?? (hour12 ? '{h12}{ampm}' : '{hh}h');
+  return format
+    .replace('{h12}', String(hh % 12 || 12))
+    .replace('{ampm}', hh < 12 ? 'am' : 'pm')
+    .replace('{hh}', label.slice(0, 2))
+    .replace('{h}', String(hh));
 }
 
 /**
@@ -127,8 +138,10 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
   }
   if (!wet) {
     // A row of zero bars says nothing; a sentence does.
-    const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista' });
-    kit.drawTracked(g, kit.truncate(g, text, b.w, { size: 19 * k, family: theme.fonts.sans }), x0, rainBase - 10 * k, { size: 19 * k, family: theme.fonts.sans, color: theme.colors.inkFaint, tracking: 1 });
+    const text = t({ en: 'No rain expected', es: 'Sin lluvia prevista', 'zh-Hant': '預計不會下雨', 'zh-Hans': '预计无降水' });
+    // Measured as it is drawn (with its tracking), or a cut text still overflows.
+    const look = { size: 19 * k, family: theme.fonts.sans, tracking: 1 };
+    kit.drawTracked(g, kit.truncate(g, text, b.w, look), x0, rainBase - 10 * k, { ...look, color: theme.colors.inkFaint });
   }
 
   // Midnight: where tomorrow starts, now that the chart reaches it.
@@ -147,7 +160,7 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
   g.stroke();
   // Hour labels share one size, shrunk if the widest one ("10pm") would touch its neighbours.
   const hourFont = { size: 19 * k, family: theme.fonts.sans };
-  const widest = Math.max(...shown.map((h) => kit.measureTracked(g, hourLabel(h.label, p.fmt.hour12), hourFont)));
+  const widest = Math.max(...shown.map((h) => kit.measureTracked(g, hourLabel(h.label, p.fmt.hour12, p.t), hourFont)));
   const hourSize = Math.max(9, widest > step * 0.9 ? (hourFont.size * step * 0.9) / widest : hourFont.size);
   for (const [i, h] of shown.entries()) {
     const x = cx(i), y = yOf(h.temp);
@@ -166,7 +179,7 @@ export function drawHourly(p: Painter, hours: HourForecast[], b: Box, hourStep =
     // Every column labelled; hour by hour, the ones divisible by three brighter, to find your way.
     const bright = hourStep > 1 || hourOf(h) % 3 === 0;
     // The baseline sits above the bottom by the descent of "pm": its p would hang out of the box.
-    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12), x, bottom - Math.ceil(hourSize * 0.24), { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
+    kit.drawTracked(g, hourLabel(h.label, p.fmt.hour12, p.t), x, bottom - Math.ceil(hourSize * 0.24), { size: hourSize, family: theme.fonts.sans, color: bright ? theme.colors.inkDim : theme.colors.inkFaint, align: 'center' });
   }
 }
 
@@ -218,7 +231,7 @@ export function drawMoon(p: Painter, b: Box): void {
   kit.drawMoonPhase(g, m, cx, top + disc / 2, disc, theme.colors.ink);
   const name = t(moonName(m));
   kit.drawTracked(g, kit.truncate(g, name, b.w, { size: S, family: theme.fonts.sans }), cx, top + disc + S * 1.8, { size: S, family: theme.fonts.sans, color: theme.colors.inkDim, align: 'center' });
-  const sub = `${Math.round(m.illumination * 100)}% · ${t(moonHeadline(m))}`;
+  const sub = `${Math.round(m.illumination * 100)}% · ${moonHeadline(m, p)}`;
   const ss = S * 0.85;
   kit.drawTracked(g, kit.truncate(g, sub, b.w, { size: ss, family: theme.fonts.sans }), cx, top + disc + S * 3.4, { size: ss, family: theme.fonts.sans, color: theme.colors.inkFaint, align: 'center' });
 }

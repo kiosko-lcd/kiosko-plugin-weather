@@ -3,9 +3,10 @@ import assert from 'node:assert';
 import { localize } from '@kiosko/sdk';
 import { moonPhase } from '@loksly/weather-astro';
 import { dayLabel, describeCode, moonHeadline } from './labels.ts';
+import type { Localized } from '@kiosko/sdk';
 import { detailsLine, hourLabel } from './draw.ts';
 import plugin, { current, forecast, hoursToShow } from './index.ts';
-import { createBaseContext, defaultsOf, validate } from '@kiosko/sdk';
+import { createBaseContext, defaultsOf, errorMessage, validate } from '@kiosko/sdk';
 import { demoWeather } from './demo.ts';
 
 test('weather: WMO codes become text in both languages', () => {
@@ -29,6 +30,10 @@ test('weather: short hour labels follow the clock; details in the reading units'
   assert.strictEqual(hourLabel('14:00', false), '14h');
   assert.strictEqual(hourLabel('14:00', true), '2pm');
   assert.strictEqual(hourLabel('00:00', true), '12am');
+  const zh = (l: string) => (text: Localized) => (typeof text === 'string' ? text : (text[l] ?? text.en));
+  assert.strictEqual(hourLabel('14:00', true, zh('zh-Hant')), '14時');
+  assert.strictEqual(hourLabel('09:00', false, zh('zh-Hans')), '9时');
+  assert.strictEqual(hourLabel('14:00', true, zh('en')), '2pm');
   const w = demoWeather(Date.parse('2026-11-05T10:42:00'));
   assert.strictEqual(detailsLine(w, (x) => localize(x, 'es')), 'Sensación 10° · 64% · 14 km/h');
   assert.match(detailsLine({ ...w, units: 'imperial' }, (x) => localize(x, 'en')), /^Feels .* mph$/);
@@ -45,7 +50,8 @@ test('weather: forecast options are counts, the source uses the shared place fie
 
 test('weather: without a place the source fails without touching the network', async () => {
   const ctx = { ...createBaseContext({ now: Date.now(), dataDir: '/nonexistent' }), options: validate(current.options!, {}).value, signal: new AbortController().signal, intervalMs: 900_000, timeoutMs: 20_000 };
-  await assert.rejects(current.read!(ctx), /no place/);
+  await assert.rejects(current.read!(ctx), /No place/);
+  await assert.rejects(current.read!(ctx), (e: unknown) => errorMessage(e, 'zh-TW').startsWith('沒有位置'));
 });
 
 test('weather: the first forecast day is "today", the rest their weekday', () => {
@@ -57,8 +63,15 @@ test('weather: the first forecast day is "today", the rest their weekday', () =>
 
 test('weather: the moon counts down to the nearest milestone', () => {
   const m = moonPhase(Date.UTC(2026, 10, 5));
-  const line = localize(moonHeadline(m), 'en');
+  const line = moonHeadline(m, createBaseContext({ now: 0, locale: 'en' }));
   assert.match(line, /^(Full|New) (today|tomorrow|in \d+ days)$/);
+  const ctx = (locale: string) => createBaseContext({ now: 0, locale });
+  const moon = (daysToFull: number, daysToNew: number) => ({ ...m, daysToFull, daysToNew });
+  assert.strictEqual(moonHeadline(moon(5, 20), ctx('en')), 'Full in 5 days');
+  assert.strictEqual(moonHeadline(moon(1, 20), ctx('en')), 'Full tomorrow');
+  assert.strictEqual(moonHeadline(moon(20, 3), ctx('es')), 'Nueva en 3 días');
+  assert.strictEqual(moonHeadline(moon(5, 20), ctx('zh-TW')), '5 天後滿月');
+  assert.strictEqual(moonHeadline(moon(20, 3), ctx('zh-CN')), '3 天后新月');
 });
 
 test('weather: the demo reading is complete and deterministic', () => {

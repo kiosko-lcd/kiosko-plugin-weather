@@ -9,7 +9,7 @@
  */
 import { join } from 'node:path';
 import { fetchWeather, loadWeather, saveWeather, type Weather } from '@loksly/weather-astro';
-import { definePlugin, defineSource, defineWidget, locationOptions, placeOf, t, type Box } from '@kiosko/sdk';
+import { definePlugin, defineSource, defineWidget, locationOptions, placeOf, PluginError, t, type Box } from '@kiosko/sdk';
 import { demoWeather } from './demo.ts';
 import { drawDays, drawHourly, drawMoon, drawNow, drawTiny, rule, type Painter } from './draw.ts';
 
@@ -17,15 +17,17 @@ export { demoWeather };
 
 export const current = defineSource({
   id: 'current',
-  name: { en: 'Current weather', es: 'Tiempo actual' },
+  name: { en: 'Current weather', es: 'Tiempo actual', 'zh-Hant': '目前天氣', 'zh-Hans': '当前天气' },
   description: {
     en: 'Now, the next 48 hours and the next 7 days, from Open-Meteo (no key needed), for your place in Settings or the one set here.',
     es: 'Ahora, las próximas 48 horas y los próximos 7 días, de Open-Meteo (sin clave), para tu lugar de los ajustes o el que pongas aquí.',
+    'zh-Hant': '現在、未來 48 小時與未來 7 天的天氣，來自 Open-Meteo（不需金鑰），地點取自「設定」或在此指定。',
+    'zh-Hans': '现在、未来 48 小时和未来 7 天的天气，来自 Open-Meteo（无需密钥），地点取自“设置”或在此指定。',
   },
   options: t.object({
     units: t.enum(['metric', 'imperial'] as const, {
-      label: { en: 'Units', es: 'Unidades' },
-      labels: { metric: { en: 'Metric (°C, km/h)', es: 'Métricas (°C, km/h)' }, imperial: { en: 'Imperial (°F, mph)', es: 'Imperiales (°F, mph)' } },
+      label: { en: 'Units', es: 'Unidades', 'zh-Hant': '單位', 'zh-Hans': '单位' },
+      labels: { metric: { en: 'Metric (°C, km/h)', es: 'Métricas (°C, km/h)', 'zh-Hant': '公制（°C、km/h）', 'zh-Hans': '公制（°C、km/h）' }, imperial: { en: 'Imperial (°F, mph)', es: 'Imperiales (°F, mph)', 'zh-Hant': '英制（°F、mph）', 'zh-Hans': '英制（°F、mph）' } },
     }),
     ...locationOptions(),
   }),
@@ -36,7 +38,14 @@ export const current = defineSource({
   async read(ctx): Promise<Weather> {
     const { options: o } = ctx;
     const place = placeOf(o, ctx.location);
-    if (!place) throw new Error('no place: set your location in Settings or latitude/longitude in this source');
+    if (!place) {
+      throw new PluginError({
+        en: 'No place: set your location in Settings, or latitude and longitude in this source',
+        es: 'Sin ubicación: pon tu ubicación en Ajustes, o latitud y longitud en esta fuente',
+        'zh-Hant': '沒有位置：請在「設定」中設定你的位置，或在此資料來源中填入緯度和經度',
+        'zh-Hans': '没有位置：请在“设置”中设置你的位置，或在此数据源中填写纬度和经度',
+      });
+    }
     const { latitude: lat, longitude: lon } = place;
     const name = place.name?.trim() || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
     const file = join(ctx.cacheDir || ctx.dataDir, `weather-${lat.toFixed(3)}_${lon.toFixed(3)}${o.units === 'imperial' ? '-imperial' : ''}.json`);
@@ -60,10 +69,12 @@ export const current = defineSource({
 
 export const forecast = defineWidget({
   id: 'forecast',
-  name: { en: 'Weather forecast', es: 'Previsión del tiempo' },
+  name: { en: 'Weather forecast', es: 'Previsión del tiempo', 'zh-Hant': '天氣預報', 'zh-Hans': '天气预报' },
   description: {
     en: 'Temperature and sky now, the next hours (temperature curve and rain) and days, and the moon when there is room.',
     es: 'Temperatura y cielo ahora, las próximas horas (curva de temperatura y lluvia) y días, y la luna si hay sitio.',
+    'zh-Hant': '現在的溫度與天空狀況、未來幾小時（溫度曲線與降雨）和未來幾天，空間足夠時還有月相。',
+    'zh-Hans': '当前温度和天空状况、未来几小时（温度曲线和降水）和未来几天，空间足够时还有月相。',
   },
   icon: 'cloud-sun',
   category: 'info',
@@ -75,36 +86,36 @@ export const forecast = defineWidget({
       min: 0,
       max: 48,
       unit: 'h',
-      label: { en: 'Next hours', es: 'Próximas horas' },
-      help: { en: 'How far ahead the hourly chart goes, as many hours as fit. 0 hides it.', es: 'Hasta dónde llega la gráfica por horas, las que quepan. 0 la oculta.' },
+      label: { en: 'Next hours', es: 'Próximas horas', 'zh-Hant': '未來幾小時', 'zh-Hans': '未来几小时' },
+      help: { en: 'How far ahead the hourly chart goes, as many hours as fit. 0 hides it.', es: 'Hasta dónde llega la gráfica por horas, las que quepan. 0 la oculta.', 'zh-Hant': '逐時圖表涵蓋的時間長度，能放幾小時就放幾小時。0 表示隱藏。', 'zh-Hans': '逐小时图表覆盖的时间长度，能放几小时就放几小时。0 表示隐藏。' },
     }),
     hourStep: t.integer({
       default: 1,
       min: 1,
       max: 6,
       unit: 'h',
-      label: { en: 'One column every', es: 'Una columna cada' },
-      help: { en: '2 or 3 fit a whole day in a narrow tile.', es: 'Con 2 o 3 cabe un día entero en una tesela estrecha.' },
+      label: { en: 'One column every', es: 'Una columna cada', 'zh-Hant': '每欄間隔', 'zh-Hans': '每列间隔' },
+      help: { en: '2 or 3 fit a whole day in a narrow tile.', es: 'Con 2 o 3 cabe un día entero en una tesela estrecha.', 'zh-Hant': '設為 2 或 3，窄方格也能放下一整天。', 'zh-Hans': '设为 2 或 3，窄格子也能放下一整天。' },
     }),
     days: t.integer({
       default: 3,
       min: 0,
       max: 7,
-      label: { en: 'Next days', es: 'Próximos días' },
-      help: { en: 'Today included, as many as fit. 0 hides them.', es: 'Hoy incluido, los que quepan. 0 los oculta.' },
+      label: { en: 'Next days', es: 'Próximos días', 'zh-Hant': '未來幾天', 'zh-Hans': '未来几天' },
+      help: { en: 'Today included, as many as fit. 0 hides them.', es: 'Hoy incluido, los que quepan. 0 los oculta.', 'zh-Hant': '包含今天，能放幾天就放幾天。0 表示隱藏。', 'zh-Hans': '包含今天，能放几天就放几天。0 表示隐藏。' },
     }),
-    showMoon: t.boolean({ default: true, label: { en: 'Moon phase', es: 'Fase de la luna' }, help: { en: 'Only on wide tiles.', es: 'Sólo en teselas anchas.' } }),
-    showDetails: t.boolean({ default: false, label: { en: 'Feels like, humidity and wind', es: 'Sensación, humedad y viento' }, help: { en: 'Under the temperature, when there is room.', es: 'Bajo la temperatura, si hay sitio.' } }),
+    showMoon: t.boolean({ default: true, label: { en: 'Moon phase', es: 'Fase de la luna', 'zh-Hant': '月相', 'zh-Hans': '月相' }, help: { en: 'Only on wide tiles.', es: 'Sólo en teselas anchas.', 'zh-Hant': '僅限寬方格。', 'zh-Hans': '仅限宽格子。' } }),
+    showDetails: t.boolean({ default: false, label: { en: 'Feels like, humidity and wind', es: 'Sensación, humedad y viento', 'zh-Hant': '體感溫度、濕度與風', 'zh-Hans': '体感温度、湿度和风' }, help: { en: 'Under the temperature, when there is room.', es: 'Bajo la temperatura, si hay sitio.', 'zh-Hant': '顯示在溫度下方，空間足夠時。', 'zh-Hans': '显示在温度下方，空间足够时。' } }),
   }),
   sources: ['weather/current'],
   redraw: 'never',
   render(g, ctx) {
     const { box, theme, kit, options } = ctx;
     const w = ctx.sources['weather/current'] as Weather | undefined;
-    const p: Painter = { g, kit, theme, t: ctx.t, fmt: ctx.fmt, locale: ctx.locale, now: ctx.now };
+    const p: Painter = { g, kit, theme, t: ctx.t, plural: ctx.plural, fmt: ctx.fmt, locale: ctx.locale, now: ctx.now };
     if (!w) {
       const size = Math.max(10, Math.min(24, box.h / 5));
-      const msg = ctx.t({ en: 'No weather yet', es: 'Aún sin datos del tiempo' });
+      const msg = ctx.t({ en: 'No weather yet', es: 'Aún sin datos del tiempo', 'zh-Hant': '尚無天氣資料', 'zh-Hans': '暂无天气数据' });
       kit.drawTracked(g, kit.truncate(g, msg, box.w, { size, family: theme.fonts.sans }), box.x + box.w / 2, box.y + box.h / 2 + size * 0.35, { size, family: theme.fonts.sans, color: theme.colors.inkFaint, align: 'center' });
       return;
     }
@@ -181,11 +192,12 @@ export function hoursToShow(w: Pick<Weather, 'hours'>, ahead: number, step: numb
 
 export default definePlugin({
   id: 'weather',
-  name: { en: 'Weather', es: 'El tiempo' },
+  name: { en: 'Weather', es: 'El tiempo', 'zh-Hant': '天氣', 'zh-Hans': '天气' },
   version: '0.2.1',
+  languages: ['en', 'es', 'zh-Hant', 'zh-Hans'],
   sdk: '^0.2.0',
   permissions: { network: ['api.open-meteo.com'] },
-  description: { en: 'Weather from Open-Meteo, shared with every widget, and a forecast card.', es: 'El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.' },
+  description: { en: 'Weather from Open-Meteo, shared with every widget, and a forecast card.', es: 'El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.', 'zh-Hant': '來自 Open-Meteo 的天氣，供所有小工具共用，另附一張預報卡片。', 'zh-Hans': '来自 Open-Meteo 的天气，供所有小组件共享，另附一张预报卡片。' },
   author: 'Kiosko',
   license: 'MIT',
   icon: 'cloud-sun',
