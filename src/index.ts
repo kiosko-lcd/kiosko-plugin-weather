@@ -196,7 +196,7 @@ export function hoursToShow(w: Pick<Weather, 'hours'>, ahead: number, step: numb
 export default definePlugin({
   id: 'weather',
   name: { en: 'Weather', es: 'El tiempo', de: 'Wetter', 'zh-Hant': '天氣', 'zh-Hans': '天气' },
-  version: '0.2.1',
+  version: '0.2.2',
   languages: ['en', 'es', 'de', 'zh-Hant', 'zh-Hans'],
   sdk: '^0.2.0',
   permissions: { network: ['api.open-meteo.com'] },
