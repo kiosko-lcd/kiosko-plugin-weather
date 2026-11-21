@@ -9,7 +9,7 @@
     "zh-Hant": "天氣",
     "zh-Hans": "天气"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": {
     "en": "Weather from Open-Meteo, shared with every widget, and a forecast card.",
     "es": "El tiempo de Open-Meteo, compartido con todos los widgets, y una tarjeta de previsión.",
